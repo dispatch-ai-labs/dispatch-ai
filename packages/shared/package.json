@@ -1,6 +1,6 @@
 {
   "name": "@dispatch-ai/shared",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Shared zod schemas and constants for dispatch-ai.",
   "license": "Apache-2.0",
   "type": "module",
@@ -9,7 +9,10 @@
   "exports": {
     ".": "./src/index.ts"
   },
-  "files": ["src", "README.md"],
+  "files": [
+    "src",
+    "README.md"
+  ],
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "build": "echo 'no build step — package ships source'"

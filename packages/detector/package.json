@@ -1,6 +1,6 @@
 {
   "name": "@dispatch-ai/detector",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Placeholder + fake-import detector for AI-generated Python diffs.",
   "license": "Apache-2.0",
   "type": "module",

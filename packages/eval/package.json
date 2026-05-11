@@ -1,6 +1,6 @@
 {
   "name": "@dispatch-ai/eval",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Eval harness for the dispatch-ai detector. Snapshot-based determinism.",
   "license": "Apache-2.0",
   "private": true,
