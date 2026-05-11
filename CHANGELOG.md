@@ -16,5 +16,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial repository scaffold. No user-facing functionality yet. This release exists to prove the publish pipeline end-to-end before week-1 detector work begins.
 - Pinned default model: `claude-sonnet-4-6` (in `@dispatch-ai/shared`).
 
-[Unreleased]: https://github.com/OWNER/dispatch-ai/compare/v0.0.0...HEAD
-[0.0.0]: https://github.com/OWNER/dispatch-ai/releases/tag/v0.0.0
+[Unreleased]: https://github.com/dispatch-ai-labs/dispatch-ai/compare/v0.0.0...HEAD
+[0.0.0]: https://github.com/dispatch-ai-labs/dispatch-ai/releases/tag/v0.0.0

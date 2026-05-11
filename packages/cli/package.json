@@ -1,5 +1,5 @@
 {
-  "name": "dispatch-ai",
+  "name": "@dispatch-ai-labs/cli",
   "version": "0.0.0",
   "description": "Pattern 3 autonomous coding CLI with a verifier you can trust.",
   "license": "Apache-2.0",
@@ -18,8 +18,8 @@
     "build": "bun build src/bin.ts --compile --outfile dist/dispatch"
   },
   "dependencies": {
-    "@dispatch-ai/detector": "workspace:*",
-    "@dispatch-ai/shared": "workspace:*"
+    "@dispatch-ai-labs/detector": "workspace:*",
+    "@dispatch-ai-labs/shared": "workspace:*"
   },
   "publishConfig": {
     "access": "public"

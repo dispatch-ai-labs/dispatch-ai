@@ -1,5 +1,5 @@
 {
-  "name": "@dispatch-ai/detector",
+  "name": "@dispatch-ai-labs/detector",
   "version": "0.0.0",
   "description": "Placeholder + fake-import detector for AI-generated Python diffs.",
   "license": "Apache-2.0",
@@ -18,7 +18,7 @@
     "build": "bun build src/bin.ts --compile --outfile dist/dispatch-detector"
   },
   "dependencies": {
-    "@dispatch-ai/shared": "workspace:*"
+    "@dispatch-ai-labs/shared": "workspace:*"
   },
   "publishConfig": {
     "access": "public"

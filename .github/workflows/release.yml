@@ -59,17 +59,17 @@ jobs:
           node-version: 22
           registry-url: 'https://registry.npmjs.org'
       - run: bun install --frozen-lockfile
-      - name: Publish @dispatch-ai/shared
+      - name: Publish @dispatch-ai-labs/shared
         working-directory: packages/shared
         run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Publish @dispatch-ai/detector
+      - name: Publish @dispatch-ai-labs/detector
         working-directory: packages/detector
         run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Publish dispatch-ai
+      - name: Publish @dispatch-ai-labs/cli
         working-directory: packages/cli
         run: npm publish --access public --provenance
         env:
@@ -98,8 +98,7 @@ jobs:
     steps:
       - name: Compute SHAs and update formula
         env:
-          # TODO: replace OWNER below with the GitHub user/org that owns homebrew-dispatch-ai
-          TAP: OWNER/homebrew-dispatch-ai
+          TAP: dispatch-ai-labs/homebrew-dispatch-ai
           TAG: ${{ github.ref_name }}
           REPO: ${{ github.repository }}
           HOMEBREW_TAP_PAT: ${{ secrets.HOMEBREW_TAP_PAT }}

@@ -2,16 +2,16 @@
 
 Pattern 3 autonomous coding CLI with a verifier you can trust.
 
-> **Status:** pre-launch scaffold (v0.0.0). Week-1 detector launch and v0.1 CLI launch coming. See `~/.gstack/projects/dispatch.ai/andrew-main-design-20260511-133414.md` for the design doc (v2-REV1 amendments at the bottom are the locked plan).
+> **Status:** pre-launch scaffold (v0.0.0). Week-1 detector launch and v0.1 CLI launch coming. v2-REV1 design notes track in `DESIGN.md` (added before week-1 work begins).
 
 ## Packages
 
 | Package | Description |
 |---|---|
-| `@dispatch-ai/detector` | Placeholder + fake-import detector for AI-generated Python diffs. Ships standalone on npm. |
-| `dispatch-ai` (binary `dispatch`) | The Pattern 3 orchestrator CLI: plan → step-execute → verify → replan. |
-| `@dispatch-ai/shared` | Shared zod schemas (Plan, Step, StepResult, VerificationResult, ReplanInput, DispatchConfig). |
-| `@dispatch-ai/eval` | Eval harness for the detector with committed JSON snapshots for determinism. |
+| `@dispatch-ai-labs/detector` | Placeholder + fake-import detector for AI-generated Python diffs. Ships standalone on npm. Binary: `dispatch-detector`. |
+| `@dispatch-ai-labs/cli` | The Pattern 3 orchestrator CLI: plan → step-execute → verify → replan. Binary: `dispatch`. |
+| `@dispatch-ai-labs/shared` | Shared zod schemas (Plan, Step, StepResult, VerificationResult, ReplanInput, DispatchConfig). |
+| `@dispatch-ai-labs/eval` | Eval harness for the detector with committed JSON snapshots for determinism. (private)|
 
 ## Open-core line
 
@@ -44,6 +44,6 @@ git push --tags
 
 The release workflow builds Bun-compiled binaries for darwin-arm64, darwin-x64, linux-x64, linux-arm64, windows-x64; publishes the three npm packages; updates the Homebrew formula in `homebrew-dispatch-ai`; attaches binaries to the GitHub Release.
 
-Required secrets in the repo settings:
-- `NPM_TOKEN` — npm automation token with publish rights to `dispatch-ai`, `@dispatch-ai/detector`, `@dispatch-ai/shared`.
-- `HOMEBREW_TAP_PAT` — fine-grained GitHub PAT with `contents: write` on the `homebrew-dispatch-ai` repo.
+Required secrets in `dispatch-ai-labs/dispatch-ai` settings:
+- `NPM_TOKEN` — npm automation token with publish rights to `@dispatch-ai-labs/cli`, `@dispatch-ai-labs/detector`, `@dispatch-ai-labs/shared`. Recommended: granular access token scoped only to those packages.
+- `HOMEBREW_TAP_PAT` — fine-grained GitHub PAT with `contents: write` on `dispatch-ai-labs/homebrew-dispatch-ai`.

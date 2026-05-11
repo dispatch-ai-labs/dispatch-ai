@@ -11,5 +11,5 @@ if (args.includes('--version') || args.includes('-v')) {
 console.log(`dispatch v${VERSION}`);
 console.log('Not yet implemented (Week 0 scaffold).');
 console.log('Week 1 will ship the standalone detector first.');
-console.log('Track progress: https://github.com/OWNER/dispatch-ai');
+console.log('Track progress: https://github.com/dispatch-ai-labs/dispatch-ai');
 process.exit(0);

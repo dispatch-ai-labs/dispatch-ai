@@ -1,5 +1,5 @@
 {
-  "name": "@dispatch-ai/eval",
+  "name": "@dispatch-ai-labs/eval",
   "version": "0.0.0",
   "description": "Eval harness for the dispatch-ai detector. Snapshot-based determinism.",
   "license": "Apache-2.0",
@@ -12,7 +12,7 @@
     "eval:live": "bun run src/run-live.ts"
   },
   "dependencies": {
-    "@dispatch-ai/detector": "workspace:*",
-    "@dispatch-ai/shared": "workspace:*"
+    "@dispatch-ai-labs/detector": "workspace:*",
+    "@dispatch-ai-labs/shared": "workspace:*"
   }
 }
