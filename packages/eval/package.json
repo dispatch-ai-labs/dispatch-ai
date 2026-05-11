@@ -12,7 +12,8 @@
     "eval:live": "bun run src/run-live.ts"
   },
   "dependencies": {
-    "@dispatch-ai-labs/detector": "workspace:*",
-    "@dispatch-ai-labs/shared": "workspace:*"
+    "@dispatch-ai/detector": "workspace:*",
+    "@dispatch-ai/shared": "workspace:*"
   }
 }
+  

@@ -18,7 +18,7 @@
     "build": "bun build src/bin.ts --compile --outfile dist/dispatch-detector"
   },
   "dependencies": {
-    "@dispatch-ai-labs/shared": "workspace:*"
+    "@dispatch-ai/shared": "workspace:*"
   },
   "publishConfig": {
     "access": "public"
