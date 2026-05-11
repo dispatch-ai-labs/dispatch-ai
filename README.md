@@ -8,10 +8,10 @@ Pattern 3 autonomous coding CLI with a verifier you can trust.
 
 | Package | Description |
 |---|---|
-| `@dispatch-ai-labs/detector` | Placeholder + fake-import detector for AI-generated Python diffs. Ships standalone on npm. Binary: `dispatch-detector`. |
-| `@dispatch-ai-labs/cli` | The Pattern 3 orchestrator CLI: plan → step-execute → verify → replan. Binary: `dispatch`. |
-| `@dispatch-ai-labs/shared` | Shared zod schemas (Plan, Step, StepResult, VerificationResult, ReplanInput, DispatchConfig). |
-| `@dispatch-ai-labs/eval` | Eval harness for the detector with committed JSON snapshots for determinism. (private)|
+| `@dispatch-ai/detector` | Placeholder + fake-import detector for AI-generated Python diffs. Ships standalone on npm. Binary: `dispatch-detector`. |
+| `@dispatch-ai/cli` | The Pattern 3 orchestrator CLI: plan → step-execute → verify → replan. Binary: `dispatch`. |
+| `@dispatch-ai/shared` | Shared zod schemas (Plan, Step, StepResult, VerificationResult, ReplanInput, DispatchConfig). |
+| `@dispatch-ai/eval` | Eval harness for the detector with committed JSON snapshots for determinism. (private)|
 
 ## Open-core line
 

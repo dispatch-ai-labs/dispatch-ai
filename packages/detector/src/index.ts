@@ -1,4 +1,4 @@
-import { VERSION } from '@dispatch-ai-labs/shared';
+import { VERSION } from '@dispatch-ai/shared';
 
 export { VERSION };
 
