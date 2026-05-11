@@ -1,5 +1,5 @@
 {
-  "name": "@dispatch-ai-labs/cli",
+  "name": "@dispatch-ai/cli",
   "version": "0.0.0",
   "description": "Pattern 3 autonomous coding CLI with a verifier you can trust.",
   "license": "Apache-2.0",

@@ -1,5 +1,5 @@
 {
-  "name": "@dispatch-ai-labs/shared",
+  "name": "@dispatch-ai/shared",
   "version": "0.0.0",
   "description": "Shared zod schemas and constants for dispatch-ai.",
   "license": "Apache-2.0",

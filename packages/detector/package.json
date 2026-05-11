@@ -1,5 +1,5 @@
 {
-  "name": "@dispatch-ai-labs/detector",
+  "name": "@dispatch-ai/detector",
   "version": "0.0.0",
   "description": "Placeholder + fake-import detector for AI-generated Python diffs.",
   "license": "Apache-2.0",
