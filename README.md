@@ -43,7 +43,3 @@ git push --tags
 ```
 
 The release workflow builds Bun-compiled binaries for darwin-arm64, darwin-x64, linux-x64, linux-arm64, windows-x64; publishes the three npm packages; updates the Homebrew formula in `homebrew-dispatch-ai`; attaches binaries to the GitHub Release.
-
-Required secrets in `dispatch-ai-labs/dispatch-ai` settings:
-- `NPM_TOKEN` — npm automation token with publish rights to `@dispatch-ai-labs/cli`, `@dispatch-ai-labs/detector`, `@dispatch-ai-labs/shared`. Recommended: granular access token scoped only to those packages.
-- `HOMEBREW_TAP_PAT` — fine-grained GitHub PAT with `contents: write` on `dispatch-ai-labs/homebrew-dispatch-ai`.
