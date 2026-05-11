@@ -3,6 +3,10 @@
   "version": "0.0.1",
   "description": "Eval harness for the dispatch-ai detector. Snapshot-based determinism.",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dispatch-ai-labs/dispatch-ai.git"
+  },
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
