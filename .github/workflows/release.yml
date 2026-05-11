@@ -61,10 +61,6 @@ jobs:
           
       - run: bun install --frozen-lockfile
       
-      # The critical step securely wiring your token to the npm registry setup
-      - name: Authenticate with NPM target
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
-        
       - name: Publish @dispatch-ai/shared
         working-directory: packages/shared
         run: npm publish --access public --provenance
