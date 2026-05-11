@@ -1,0 +1,165 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-binaries:
+    name: Build (${{ matrix.target.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - { bun: bun-linux-x64,    name: dispatch-linux-x64 }
+          - { bun: bun-linux-arm64,  name: dispatch-linux-arm64 }
+          - { bun: bun-darwin-x64,   name: dispatch-darwin-x64 }
+          - { bun: bun-darwin-arm64, name: dispatch-darwin-arm64 }
+          - { bun: bun-windows-x64,  name: dispatch-windows-x64.exe }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Build binary
+        env:
+          BUN_TARGET: ${{ matrix.target.bun }}
+          OUT_NAME: ${{ matrix.target.name }}
+        run: |
+          mkdir -p dist
+          bun build packages/cli/src/bin.ts \
+            --compile \
+            --target="$BUN_TARGET" \
+            --outfile "dist/$OUT_NAME"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target.name }}
+          path: dist/${{ matrix.target.name }}
+          if-no-files-found: error
+
+  publish-npm:
+    needs: build-binaries
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+      - run: bun install --frozen-lockfile
+      - name: Publish @dispatch-ai/shared
+        working-directory: packages/shared
+        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish @dispatch-ai/detector
+        working-directory: packages/detector
+        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish dispatch-ai
+        working-directory: packages/cli
+        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  github-release:
+    needs: build-binaries
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+
+  update-homebrew:
+    needs: github-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compute SHAs and update formula
+        env:
+          # TODO: replace OWNER below with the GitHub user/org that owns homebrew-dispatch-ai
+          TAP: OWNER/homebrew-dispatch-ai
+          TAG: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+          HOMEBREW_TAP_PAT: ${{ secrets.HOMEBREW_TAP_PAT }}
+        run: |
+          set -euo pipefail
+          VER="${TAG#v}"
+          DL="https://github.com/${REPO}/releases/download/${TAG}"
+          for arch in darwin-arm64 darwin-x64 linux-arm64 linux-x64; do
+            curl -fsSL "${DL}/dispatch-${arch}" -o "/tmp/${arch}"
+          done
+          SHA_DARM=$(sha256sum /tmp/darwin-arm64 | awk '{print $1}')
+          SHA_DX=$(sha256sum /tmp/darwin-x64 | awk '{print $1}')
+          SHA_LARM=$(sha256sum /tmp/linux-arm64 | awk '{print $1}')
+          SHA_LX=$(sha256sum /tmp/linux-x64 | awk '{print $1}')
+          git clone "https://x-access-token:${HOMEBREW_TAP_PAT}@github.com/${TAP}.git" tap
+          cd tap
+          mkdir -p Formula
+          cat > Formula/dispatch-ai.rb <<EOF
+          class DispatchAi < Formula
+            desc "Pattern 3 autonomous coding CLI with a verifier you can trust"
+            homepage "https://github.com/${REPO}"
+            version "${VER}"
+
+            on_macos do
+              on_arm do
+                url "${DL}/dispatch-darwin-arm64"
+                sha256 "${SHA_DARM}"
+              end
+              on_intel do
+                url "${DL}/dispatch-darwin-x64"
+                sha256 "${SHA_DX}"
+              end
+            end
+
+            on_linux do
+              on_arm do
+                url "${DL}/dispatch-linux-arm64"
+                sha256 "${SHA_LARM}"
+              end
+              on_intel do
+                url "${DL}/dispatch-linux-x64"
+                sha256 "${SHA_LX}"
+              end
+            end
+
+            def install
+              if OS.mac?
+                bin.install (Hardware::CPU.arm? ? "dispatch-darwin-arm64" : "dispatch-darwin-x64") => "dispatch"
+              else
+                bin.install (Hardware::CPU.arm? ? "dispatch-linux-arm64" : "dispatch-linux-x64") => "dispatch"
+              end
+            end
+
+            test do
+              assert_match version.to_s, shell_output("#{bin}/dispatch --version")
+            end
+          end
+          EOF
+          git config user.name "dispatch-ai release bot"
+          git config user.email "release@dispatch.ai"
+          git add Formula/dispatch-ai.rb
+          git commit -m "Update dispatch-ai to ${VER}"
+          git push
