@@ -67,43 +67,43 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+      # registry-url writes ~/.npmrc with `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}`.
+      # The placeholder is resolved at publish-step runtime from the env var below.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Upgrade npm to a version that supports OIDC trusted publishing
-        # Trusted publishing + --provenance requires npm >= 11.5.1. Node 22 LTS ships with 10.x.
-        # We use corepack instead of `npm install -g npm@latest` because the self-upgrade
-        # corrupts its own node_modules mid-install on Node 22 runners (promise-retry was
-        # removed in npm 11; the still-running npm 10 then crashes mid-reify).
-        run: |
-          corepack enable
-          corepack prepare npm@11.5.1 --activate
-          npm --version
+          registry-url: 'https://registry.npmjs.org'
 
       - run: bun install --frozen-lockfile
 
       - name: Publish @dispatch-ai/shared
         working-directory: packages/shared
-        run: npm publish --access public --provenance
-      
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+
       - name: Publish @dispatch-ai/detector
         working-directory: packages/detector
-        run: npm publish --access public --provenance
-        
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+
       - name: Publish @dispatch-ai/cli
         working-directory: packages/cli
-        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
 
       - name: Publish dispatch-detector compatibility package
         working-directory: packages/dispatch-detector
-        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
 
   github-release:
     needs: [verify, build-binaries]

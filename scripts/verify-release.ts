@@ -105,7 +105,7 @@ for (const required of [
   'bun-darwin-arm64',
   'bun-windows-x64',
   'bun run verify:release',
-  'npm publish --access public --provenance',
+  'npm publish --access public',
   'working-directory: packages/dispatch-detector',
   'homebrew-dispatch-ai',
 ]) {
