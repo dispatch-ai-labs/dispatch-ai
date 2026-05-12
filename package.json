@@ -9,7 +9,11 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
-    "build": "bun --filter '*' build"
+    "build": "bun --filter '*' build",
+    "eval:snapshots": "bun --filter '@dispatch-ai/eval' eval:snapshots",
+    "eval:live": "bun --filter '@dispatch-ai/eval' eval:live",
+    "verify:release": "bun run scripts/verify-release.ts",
+    "demo:gif": "./scripts/generate-demo-gif.sh docs/assets/demo.gif"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

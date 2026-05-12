@@ -1,0 +1,62 @@
+name: dispatch.ai detector
+description: Detect placeholder implementations and fabricated Python imports in pull requests.
+inputs:
+  repo-root:
+    description: Repository root passed to dispatch-detector.
+    required: false
+    default: .
+  anthropic-api-key:
+    description: Optional Anthropic key for LLM judge mode.
+    required: false
+runs:
+  using: composite
+  steps:
+    - name: Collect pull request diff
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        set -euo pipefail
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          gh pr diff "${{ github.event.pull_request.number }}" > "$RUNNER_TEMP/dispatch.diff"
+        else
+          git diff HEAD~1 HEAD > "$RUNNER_TEMP/dispatch.diff"
+        fi
+
+    - name: Run dispatch detector
+      id: detector
+      shell: bash
+      env:
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
+      run: |
+        set +e
+        if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
+          DISPATCH_DETECTOR_USE_JUDGE=1 npx --yes @dispatch-ai/detector --repo "${{ inputs.repo-root }}" --judge "$RUNNER_TEMP/dispatch.diff" > "$RUNNER_TEMP/dispatch-result.json"
+        else
+          npx --yes @dispatch-ai/detector --repo "${{ inputs.repo-root }}" "$RUNNER_TEMP/dispatch.diff" > "$RUNNER_TEMP/dispatch-result.json"
+        fi
+        status=$?
+        echo "exit-code=$status" >> "$GITHUB_OUTPUT"
+        cat "$RUNNER_TEMP/dispatch-result.json"
+        exit 0
+
+    - name: Comment detector result
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const { formatDetectorComment } = require(`${process.env.GITHUB_ACTION_PATH}/packages/detector-action/comment.cjs`);
+          const result = JSON.parse(fs.readFileSync(`${process.env.RUNNER_TEMP}/dispatch-result.json`, 'utf8'));
+          const body = formatDetectorComment(result);
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body,
+          });
+
+    - name: Fail on detector failure
+      if: steps.detector.outputs.exit-code == '2'
+      shell: bash
+      run: exit 2

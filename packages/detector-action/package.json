@@ -1,0 +1,12 @@
+{
+  "name": "@dispatch-ai/detector-action",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Composite GitHub Action wrapper for @dispatch-ai/detector.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "echo 'composite action only'",
+    "build": "echo 'composite action only'"
+  }
+}

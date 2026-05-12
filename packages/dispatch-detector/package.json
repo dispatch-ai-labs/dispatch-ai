@@ -1,0 +1,26 @@
+{
+  "name": "dispatch-detector",
+  "version": "0.0.1",
+  "description": "Compatibility npx package for dispatch.ai detector.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dispatch-ai-labs/dispatch-ai.git"
+  },
+  "type": "module",
+  "bin": {
+    "dispatch-detector": "./dist/node/bin.js"
+  },
+  "files": ["dist/node", "README.md"],
+  "scripts": {
+    "typecheck": "echo 'compat package only'",
+    "build": "bun build src/bin.ts --target=node --format=esm --outdir dist/node --external @dispatch-ai/detector",
+    "prepack": "bun run build"
+  },
+  "dependencies": {
+    "@dispatch-ai/detector": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

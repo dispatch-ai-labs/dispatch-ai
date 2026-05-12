@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: '0 8 * * 1'
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -12,8 +14,15 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -24,3 +33,24 @@ jobs:
         run: bun run typecheck
       - name: Test
         run: bun test
+      - name: Eval snapshots
+        run: bun run eval:snapshots
+      - name: Weekly drift baseline
+        if: github.event_name == 'schedule'
+        run: bun run eval:live
+      - name: Build
+        run: bun run build
+      - name: Release surface verification
+        run: bun run verify:release
+      - name: Node npx surface smoke
+        run: |
+          node packages/detector/dist/node/bin.js --version
+          DISPATCH_FAKE_RUN=1 node packages/cli/dist/node/bin.js run "ci fixture" --auto --docker
+      - name: Detector standalone smoke
+        run: |
+          printf '%s\n' 'diff --git a/app.py b/app.py' '@@ -1,1 +1,2 @@' '+# TODO: implement' '+return None' > /tmp/bad.patch
+          set +e
+          node packages/detector/dist/node/bin.js --repo . /tmp/bad.patch
+          status=$?
+          set -e
+          test "$status" -eq 2

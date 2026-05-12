@@ -1,0 +1,12 @@
+{
+  "name": "@dispatch-ai/dispatch-pro",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Reserved private package boundary for future paid integrations. OSS code must not move here.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "typecheck": "echo 'reserved package only'",
+    "build": "echo 'reserved package only'"
+  }
+}
