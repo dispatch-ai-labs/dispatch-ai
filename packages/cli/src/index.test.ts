@@ -97,7 +97,32 @@ test('anthropic helper applies timeout, prompt caching, and parses JSON', async 
     },
   });
 
-  expect(result.ok).toBe(true);
+  expect(result.value.ok).toBe(true);
+  expect(result.costUsd).toBe(0);
+});
+
+test('anthropic helper computes costUsd from Anthropic usage block', async () => {
+  const result = await requestAnthropicJson<{ ok: boolean }>({
+    apiKey: 'key',
+    systemPrompt: 'system',
+    repoContext: 'repo',
+    userPrompt: 'user',
+    fetchImpl: async () =>
+      new Response(
+        JSON.stringify({
+          content: [{ type: 'text', text: '{"ok":true}' }],
+          usage: {
+            input_tokens: 1_000_000,
+            output_tokens: 1_000_000,
+            cache_creation_input_tokens: 0,
+            cache_read_input_tokens: 0,
+          },
+        }),
+      ),
+  });
+
+  expect(result.value.ok).toBe(true);
+  expect(result.costUsd).toBeCloseTo(18, 4);
 });
 
 test('anthropic helper turns malformed JSON into actionable error', async () => {
@@ -163,7 +188,7 @@ test('anthropic helper retries 429 three times with backoff', async () => {
     },
   });
 
-  expect(result.ok).toBe(true);
+  expect(result.value.ok).toBe(true);
   expect(calls).toBe(4);
   expect(sleeps).toEqual([250, 500, 1000]);
 });
@@ -184,6 +209,6 @@ test('anthropic helper retries 5xx once', async () => {
     },
   });
 
-  expect(result.ok).toBe(true);
+  expect(result.value.ok).toBe(true);
   expect(calls).toBe(2);
 });

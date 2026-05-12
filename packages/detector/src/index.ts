@@ -1,11 +1,13 @@
 import { type Stats, existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, extname, join, resolve } from 'node:path';
 import {
+  type AnthropicUsage,
   DEFAULT_MODEL,
   type DetectorIssue,
   VERSION,
   type Verdict,
   VerificationResultSchema,
+  computeCostUsd,
 } from '@dispatch-ai/shared';
 
 export { VERSION };
@@ -15,6 +17,7 @@ export interface DetectorResult {
   score: number;
   verdict: Verdict;
   issues: DetectorIssue[];
+  costUsd?: number;
 }
 
 export interface DetectorOptions {
@@ -131,7 +134,15 @@ export async function detectWithJudge(
   }
 
   const judged = await judge({ diff, stepIntent });
-  return VerificationResultSchema.parse(judged);
+  const parsed = VerificationResultSchema.parse(judged);
+  return parsed.costUsd === undefined
+    ? { score: parsed.score, verdict: parsed.verdict, issues: parsed.issues }
+    : {
+        score: parsed.score,
+        verdict: parsed.verdict,
+        issues: parsed.issues,
+        costUsd: parsed.costUsd,
+      };
 }
 
 export function createAnthropicJudge(config: {
@@ -190,7 +201,9 @@ export function createAnthropicJudge(config: {
       throw new Error('Anthropic judge returned no text content.');
     }
 
-    return VerificationResultSchema.parse(JSON.parse(text));
+    const parsed = VerificationResultSchema.parse(JSON.parse(text));
+    const judgeCostUsd = computeCostUsd(model, body.usage);
+    return { ...parsed, costUsd: (parsed.costUsd ?? 0) + judgeCostUsd };
   };
 }
 
@@ -460,6 +473,7 @@ function resultFromIssues(issues: DetectorIssue[]): DetectorResult {
 
 interface AnthropicMessageResponse {
   content: Array<{ type: 'text'; text: string } | { type: string }>;
+  usage?: AnthropicUsage;
 }
 
 function isAnthropicTextPart(part: AnthropicMessageResponse['content'][number]): part is {

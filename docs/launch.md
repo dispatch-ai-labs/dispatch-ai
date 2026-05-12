@@ -22,6 +22,15 @@ bun run eval:snapshots
 bun run verify:release
 ```
 
+External readiness:
+
+```bash
+bun run verify:external
+```
+
+This command is expected to fail until live API credentials, Docker access, GitHub/release credentials, and launch-account readiness are in place.
+Use `NPM_TRUSTED_PUBLISHING_READY=1` and `LAUNCH_ACCOUNTS_READY=1` only after those manual external gates are actually done.
+
 Channels:
 
 - Hacker News

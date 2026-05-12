@@ -6,6 +6,46 @@ export const VERSION = '0.0.1';
 // Bumping requires re-running the eval harness and committing new snapshots.
 export const DEFAULT_MODEL = 'claude-sonnet-4-6' as const;
 
+// Anthropic public pricing at the time of pin (USD per 1M tokens). If Anthropic
+// changes pricing, update here and rerun eval snapshots before changing the pin.
+export interface ModelPricing {
+  inputPerMTok: number;
+  outputPerMTok: number;
+  cacheWritePerMTok: number;
+  cacheReadPerMTok: number;
+}
+
+export const MODEL_PRICING: Record<string, ModelPricing> = {
+  'claude-sonnet-4-6': {
+    inputPerMTok: 3,
+    outputPerMTok: 15,
+    cacheWritePerMTok: 3.75,
+    cacheReadPerMTok: 0.3,
+  },
+};
+
+export interface AnthropicUsage {
+  input_tokens?: number;
+  output_tokens?: number;
+  cache_creation_input_tokens?: number;
+  cache_read_input_tokens?: number;
+}
+
+export function computeCostUsd(model: string, usage: AnthropicUsage | undefined): number {
+  if (!usage) {
+    return 0;
+  }
+  const pricing = MODEL_PRICING[model];
+  if (!pricing) {
+    return 0;
+  }
+  const input = (usage.input_tokens ?? 0) * pricing.inputPerMTok;
+  const output = (usage.output_tokens ?? 0) * pricing.outputPerMTok;
+  const cacheWrite = (usage.cache_creation_input_tokens ?? 0) * pricing.cacheWritePerMTok;
+  const cacheRead = (usage.cache_read_input_tokens ?? 0) * pricing.cacheReadPerMTok;
+  return (input + output + cacheWrite + cacheRead) / 1_000_000;
+}
+
 export const VerdictSchema = z.enum(['pass', 'warn', 'fail']);
 export type Verdict = z.infer<typeof VerdictSchema>;
 

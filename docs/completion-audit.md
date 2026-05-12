@@ -34,9 +34,10 @@ Objective: complete the implementation and test tasks in the two project markdow
 | Plan/replan snapshot fixtures. | `packages/eval/src/plan-fixtures.ts`, eval tests assert 10 plan + 5 replan fixtures; `bun run verify:release` asserts committed snapshot counts. | Done |
 | GitHub Action wrapper comments detector result. | Root `action.yml`, `packages/detector-action/action.yml`, `packages/detector-action/comment.cjs`; tests cover pass/fail comment bodies and `bun run verify:release` asserts PR diff collection, detector invocation, formatter use, and comment creation strings exist. | Implemented; remote PR not run here |
 | Node-compatible package bins. | Package `dist/node/bin.js` entrypoints, `npm exec --package ./packages/...` checks in `verify-release`; release verifier also validates compatibility package names/licenses/bin maps. | Done locally |
-| Exact npm install surfaces: `npx dispatch`, `npx dispatch-detector`, `npm install -g dispatch-ai`. | Compatibility packages `packages/dispatch`, `packages/dispatch-detector`, `packages/dispatch-ai`; `bun run verify:release` checks local `npm exec --package ./packages/...` equivalents, package names/bin maps, and npm pack dry-runs. | Done locally; public name claiming still external |
+| Exact npm install surfaces: `npm install -g @dispatch-ai/cli @dispatch-ai/detector`, `npx @dispatch-ai/cli`, `npx dispatch-detector`. | Scoped packages `@dispatch-ai/{cli,detector,shared}` plus unscoped `dispatch-detector` alias (`packages/dispatch-detector`); `bun run verify:release` checks the alias name/bin map and runs `npm pack --dry-run` for each. | Done locally; unscoped `dispatch` and `dispatch-ai` names are squatted on npm and not used. |
 | Bun-compiled binaries. | `packages/cli/dist/dispatch`, `packages/detector/dist/dispatch-detector`, build + release verifier. | Done |
 | Homebrew/curl installer surfaces. | `.github/workflows/release.yml`, `install.sh`; release verifier checks installer/docs exist, README documents `curl -fsSL ... | sh`, smoke-tests `install.sh` with fake `uname`/`curl`, and asserts the release workflow includes release-tag verification, Bun target matrix, npm publishing, and Homebrew tap update. | Implemented; release artifact matrix not run here |
+| External readiness reporting. | `scripts/check-external-readiness.ts`, `bun run verify:external`; tests cover a fully provisioned fake environment with fake `docker`/`gh` and explicit manual-gate env vars. | Done locally; real gates still external |
 | README quick start and comparison. | `README.md`, `docs/comparison.md`. | Done |
 | Docs site seed. | `docs/index.md`, `docs/launch.md`. | Done |
 | CONTRIBUTING and CODE_OF_CONDUCT. | Root docs. | Done |
@@ -67,5 +68,7 @@ These items are in the markdowns but cannot be truthfully completed in this loca
 - npm/Homebrew/curl full install matrix: requires published release artifacts and account/tap access.
 - Public package-name claiming for exact shorthand commands like `npx dispatch run` and `npx dispatch-detector`: compatibility packages exist and verify locally; publishing/claiming names remains external.
 - HN/Reddit/Twitter launch posts and 3x/week dogfooding: require external accounts and elapsed time.
+
+Run `bun run verify:external` to get a machine-readable readiness report for these external gates before attempting live E2E or publication. Set `NPM_TRUSTED_PUBLISHING_READY=1` and `LAUNCH_ACCOUNTS_READY=1` only after those manual external checks are actually complete.
 
 The local implementation is ready for those external verification steps once credentials, release artifacts, Docker access, and launch-account access are available.

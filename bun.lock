@@ -40,28 +40,6 @@
       "name": "@dispatch-ai/detector-action",
       "version": "0.0.1",
     },
-    "packages/dispatch": {
-      "name": "dispatch",
-      "version": "0.0.1",
-      "bin": {
-        "dispatch": "./dist/node/bin.js",
-      },
-      "dependencies": {
-        "@dispatch-ai/cli": "workspace:*",
-      },
-    },
-    "packages/dispatch-ai": {
-      "name": "dispatch-ai",
-      "version": "0.0.1",
-      "bin": {
-        "dispatch": "./dist/node/dispatch.js",
-        "dispatch-detector": "./dist/node/dispatch-detector.js",
-      },
-      "dependencies": {
-        "@dispatch-ai/cli": "workspace:*",
-        "@dispatch-ai/detector": "workspace:*",
-      },
-    },
     "packages/dispatch-detector": {
       "name": "dispatch-detector",
       "version": "0.0.1",
@@ -132,10 +110,6 @@
     "@types/sql.js": ["@types/sql.js@1.4.11", "", { "dependencies": { "@types/emscripten": "*", "@types/node": "*" } }, "sha512-QXIx38p2ZThJaK9vP5ZdqdlRe1FG9I8SmCZOS7FHfB/2qPAjZwkL7/vlfPg6N/oWHuuOaGg/P/IRwfP2W0kWVQ=="],
 
     "bun-types": ["bun-types@1.3.13", "", { "dependencies": { "@types/node": "*" } }, "sha512-QXKeHLlOLqQX9LgYaHJfzdBaV21T63HhFJnvuRCcjZiaUDpbs5ED1MgxbMra71CsryN/1dAoXuJJJwIv/2drVA=="],
-
-    "dispatch": ["dispatch@workspace:packages/dispatch"],
-
-    "dispatch-ai": ["dispatch-ai@workspace:packages/dispatch-ai"],
 
     "dispatch-detector": ["dispatch-detector@workspace:packages/dispatch-detector"],
 

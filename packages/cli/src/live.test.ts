@@ -43,6 +43,40 @@ test('live executor parses Anthropic StepResult JSON', async () => {
   expect(result.diff).toContain('diff --git');
 });
 
+test('live executor propagates costUsd from Anthropic usage', async () => {
+  const executor = createExecutor(
+    'key',
+    'repo context',
+    async () =>
+      new Response(
+        JSON.stringify({
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({
+                stepId: '1',
+                status: 'passed',
+                diff: 'diff --git a/a.py b/a.py',
+                log: '',
+              }),
+            },
+          ],
+          usage: { input_tokens: 200_000, output_tokens: 50_000 },
+        }),
+        { status: 200 },
+      ),
+  );
+
+  const result = await executor.execute({
+    id: '1',
+    intent: 'edit file',
+    expectedOutputs: [],
+    verificationCriteria: [],
+  });
+  // 200k * 3/Mtok + 50k * 15/Mtok = 0.6 + 0.75 = 1.35 USD
+  expect(result.costUsd).toBeCloseTo(1.35, 4);
+});
+
 test('live replanner can return replacement steps or abort', async () => {
   const replanner = createReplanner(
     'key',

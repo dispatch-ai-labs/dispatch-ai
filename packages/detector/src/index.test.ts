@@ -130,5 +130,29 @@ test('anthropic judge uses timeout and prompt caching headers', async () => {
     score: 100,
     verdict: 'pass',
     issues: [],
+    costUsd: 0,
   });
+});
+
+test('anthropic judge populates costUsd from Anthropic usage block', async () => {
+  const judge = createAnthropicJudge({
+    apiKey: 'test-key',
+    fetchImpl: async () =>
+      new Response(
+        JSON.stringify({
+          content: [{ type: 'text', text: '{"score":80,"verdict":"warn","issues":[]}' }],
+          usage: {
+            input_tokens: 500_000,
+            output_tokens: 100_000,
+            cache_creation_input_tokens: 0,
+            cache_read_input_tokens: 0,
+          },
+        }),
+        { status: 200 },
+      ),
+  });
+
+  const judged = await judge({ diff: goodDiff, stepIntent: 'cap add result' });
+  // 500k * 3/Mtok + 100k * 15/Mtok = 1.5 + 1.5 = 3.0 USD
+  expect(judged.costUsd).toBeCloseTo(3, 4);
 });

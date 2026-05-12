@@ -4,16 +4,22 @@ Pattern 3 autonomous coding CLI with a verifier you can trust.
 
 Plan → execute → verify → replan. Each step's diff is checked by a deterministic detector (placeholder stubs, fake imports) and a Claude judge before it is applied to your repo. The loop halts cleanly when a budget is hit, the verifier keeps failing, or you Ctrl-C.
 
-> **Status:** the full live loop is verified end-to-end against the Anthropic API shape (planner → executor → judge → diff applied). 50/50 unit tests pass, typecheck/lint/build are clean, eval snapshots hold (recall 1.0, precision 1.0), and `verify:release` passes. Publishing to npm/Homebrew and the launch workflow are external follow-ups.
+> **Status:** the full live loop is verified end-to-end against the Anthropic API shape (planner → executor → judge → diff applied). Unit suite, typecheck, lint, build, and `verify:release` are all green; run `bun test && bun run verify:release` for current numbers. Publishing to npm/Homebrew and the launch workflow are external follow-ups.
 
 ## Use
 
-Install (once npm packages are claimed):
+Install both the orchestrator CLI and the detector:
 
 ```bash
-npm install -g dispatch-ai
+npm install -g @dispatch-ai/cli @dispatch-ai/detector
 export ANTHROPIC_API_KEY=sk-ant-...
 dispatch run "add a /healthz endpoint and a test for it"
+```
+
+You can also pull the prebuilt binary with the install script (no npm required):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/dispatch-ai-labs/dispatch-ai/main/install.sh | sh
 ```
 
 What happens on a run:
@@ -58,7 +64,6 @@ git diff | dispatch-detector --repo . --judge   # adds Claude judge when ANTHROP
 | `@dispatch-ai/detector` | Placeholder + fake-import detector for AI-generated Python diffs. Ships standalone on npm. Binary: `dispatch-detector`. |
 | `@dispatch-ai/cli` | The Pattern 3 orchestrator CLI: plan → step-execute → verify → replan. Binary: `dispatch`. |
 | `@dispatch-ai/shared` | Shared zod schemas (Plan, Step, StepResult, VerificationResult, ReplanInput, DispatchConfig). |
-| `@dispatch-ai/eval` | Eval harness for the detector with committed JSON snapshots for determinism. (private)|
 
 ## Comparison
 
@@ -100,18 +105,21 @@ npm exec --package ./packages/cli -- dispatch --version
 npm exec --package ./packages/detector -- dispatch-detector --version
 ```
 
-Published package commands, once npm names are claimed:
+Published package commands:
 
 ```bash
-npm install -g dispatch-ai
+npm install -g @dispatch-ai/cli @dispatch-ai/detector
 dispatch run "add caching" --gate-on-warn
 dispatch-detector < diff.patch
-npx dispatch run "add caching" --gate-on-warn
+npx @dispatch-ai/cli run "add caching" --gate-on-warn
+npx @dispatch-ai/detector < diff.patch
+# unscoped alias for short CI commands
 npx dispatch-detector < diff.patch
+# or pull the prebuilt binary
 curl -fsSL https://raw.githubusercontent.com/dispatch-ai-labs/dispatch-ai/main/install.sh | sh
 ```
 
-The repo includes compatibility packages for the exact install surfaces named in the launch plan: `dispatch`, `dispatch-detector`, and `dispatch-ai`. `bun run verify:release` verifies those package entrypoints locally.
+The unscoped `dispatch-detector` name is published as a short alias of `@dispatch-ai/detector`. The bare `dispatch` and `dispatch-ai` names on npm are squatted by unrelated parties; users install via the scoped `@dispatch-ai/cli` instead.
 
 ## Detector
 
@@ -146,7 +154,7 @@ git tag v0.x.y
 git push --tags
 ```
 
-The release workflow builds Bun-compiled binaries for darwin-arm64, darwin-x64, linux-x64, linux-arm64, windows-x64; publishes the three npm packages; updates the Homebrew formula in `homebrew-dispatch-ai`; attaches binaries to the GitHub Release.
+The release workflow builds Bun-compiled binaries for darwin-arm64, darwin-x64, linux-x64, linux-arm64, windows-x64; publishes the core npm packages plus compatibility packages; updates the Homebrew formula in `homebrew-dispatch-ai`; attaches binaries to the GitHub Release.
 
 ## AI use disclosure
 

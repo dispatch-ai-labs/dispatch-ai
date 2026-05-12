@@ -1,4 +1,4 @@
-import { DEFAULT_MODEL } from '@dispatch-ai/shared';
+import { type AnthropicUsage, DEFAULT_MODEL, computeCostUsd } from '@dispatch-ai/shared';
 
 export interface AnthropicJsonConfig {
   apiKey: string;
@@ -12,13 +12,21 @@ export interface AnthropicJsonConfig {
   sleepMs?: (ms: number) => Promise<void>;
 }
 
+export interface AnthropicJsonResult<T> {
+  value: T;
+  costUsd: number;
+}
+
 type FetchLike = (url: string | URL, init?: RequestInit) => Promise<Response>;
 
 interface AnthropicResponse {
   content: Array<{ type: 'text'; text: string } | { type: string }>;
+  usage?: AnthropicUsage;
 }
 
-export async function requestAnthropicJson<T>(config: AnthropicJsonConfig): Promise<T> {
+export async function requestAnthropicJson<T>(
+  config: AnthropicJsonConfig,
+): Promise<AnthropicJsonResult<T>> {
   const fetchImpl = config.fetchImpl ?? fetch;
   const sleepMs = config.sleepMs ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
   let response: Response | null = null;
@@ -87,8 +95,10 @@ export async function requestAnthropicJson<T>(config: AnthropicJsonConfig): Prom
     throw new Error('Anthropic returned no JSON text.');
   }
 
+  const costUsd = computeCostUsd(config.model ?? DEFAULT_MODEL, body.usage);
+
   try {
-    return JSON.parse(text) as T;
+    return { value: JSON.parse(text) as T, costUsd };
   } catch {
     throw new Error('Anthropic returned malformed JSON. Refine the prompt or retry the step.');
   }

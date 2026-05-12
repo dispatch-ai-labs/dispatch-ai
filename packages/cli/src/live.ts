@@ -88,7 +88,7 @@ export function createPlanner(
 ): Planner {
   return {
     async createPlan(goal) {
-      const raw = await requestAnthropicJson<unknown>({
+      const { value } = await requestAnthropicJson<unknown>({
         apiKey,
         repoContext,
         ...(signal ? { signal } : {}),
@@ -97,7 +97,7 @@ export function createPlanner(
           'You are dispatch.ai planner. Return JSON only matching {goal, summary?, steps:[{id,intent,expectedOutputs,verificationCriteria}]} with 1-8 concrete steps.',
         userPrompt: `Goal:\n${goal}`,
       });
-      return PlanSchema.parse(raw);
+      return PlanSchema.parse(value);
     },
   };
 }
@@ -110,7 +110,7 @@ export function createExecutor(
 ): Executor {
   return {
     async execute(step) {
-      const raw = await requestAnthropicJson<unknown>({
+      const { value, costUsd } = await requestAnthropicJson<unknown>({
         apiKey,
         repoContext,
         ...(signal ? { signal } : {}),
@@ -119,7 +119,8 @@ export function createExecutor(
           'You are dispatch.ai step executor. Return JSON only matching {stepId,status,diff,log}. diff must be a unified git diff. Do not include placeholders.',
         userPrompt: `Step id: ${step.id}\nIntent:\n${step.intent}\nExpected outputs:\n${step.expectedOutputs.join('\n')}`,
       });
-      return StepResultSchema.parse(raw);
+      const parsed = StepResultSchema.parse(value);
+      return { ...parsed, costUsd: (parsed.costUsd ?? 0) + costUsd };
     },
   };
 }
@@ -155,7 +156,7 @@ export function createReplanner(
 ): Replanner {
   return {
     async replan(input: ReplanInput) {
-      const raw = await requestAnthropicJson<unknown>({
+      const { value } = await requestAnthropicJson<unknown>({
         apiKey,
         repoContext,
         ...(signal ? { signal } : {}),
@@ -164,7 +165,7 @@ export function createReplanner(
           'You are dispatch.ai replanner. Return JSON only as {"abort":true} or {"steps":[{id,intent,expectedOutputs,verificationCriteria}]}. Do not repeat failed placeholder behavior.',
         userPrompt: JSON.stringify(input),
       });
-      const parsed = ReplanResponseSchema.parse(raw);
+      const parsed = ReplanResponseSchema.parse(value);
       return parsed.abort ? 'abort' : parsed.steps;
     },
   };

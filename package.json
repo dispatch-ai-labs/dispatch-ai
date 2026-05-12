@@ -13,6 +13,7 @@
     "eval:snapshots": "bun --filter '@dispatch-ai/eval' eval:snapshots",
     "eval:live": "bun --filter '@dispatch-ai/eval' eval:live",
     "verify:release": "bun run scripts/verify-release.ts",
+    "verify:external": "bun run scripts/check-external-readiness.ts",
     "demo:gif": "./scripts/generate-demo-gif.sh docs/assets/demo.gif"
   },
   "devDependencies": {

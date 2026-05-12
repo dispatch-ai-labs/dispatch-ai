@@ -76,9 +76,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          
+
+      - name: Upgrade npm to a version that supports OIDC trusted publishing
+        # Trusted publishing + --provenance requires npm >= 11.5.1. Node 22 ships with 10.x.
+        run: |
+          npm install -g npm@latest
+          npm --version
+
       - run: bun install --frozen-lockfile
-      
+
       - name: Publish @dispatch-ai/shared
         working-directory: packages/shared
         run: npm publish --access public --provenance
@@ -91,16 +97,8 @@ jobs:
         working-directory: packages/cli
         run: npm publish --access public --provenance
 
-      - name: Publish dispatch compatibility package
-        working-directory: packages/dispatch
-        run: npm publish --access public --provenance
-
       - name: Publish dispatch-detector compatibility package
         working-directory: packages/dispatch-detector
-        run: npm publish --access public --provenance
-
-      - name: Publish dispatch-ai installer package
-        working-directory: packages/dispatch-ai
         run: npm publish --access public --provenance
 
   github-release:

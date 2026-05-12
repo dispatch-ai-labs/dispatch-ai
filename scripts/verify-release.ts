@@ -28,6 +28,7 @@ const requiredFiles = [
   'docs/launch.md',
   'docs/completion-audit.md',
   'docs/assets/demo.gif',
+  'scripts/check-external-readiness.ts',
   'packages/eval/snapshots/detector-summary.json',
   'packages/eval/snapshots/plan-replan-summary.json',
 ];
@@ -45,6 +46,12 @@ const readme = await readText('README.md');
 if (!readme.includes('curl -fsSL') || !readme.includes('install.sh | sh')) {
   throw new Error('README must document the curl installer command.');
 }
+
+const rootPackage = await readJson<{ scripts?: Record<string, string> }>('package.json');
+if (!rootPackage.scripts?.['verify:external']) {
+  throw new Error('package.json must define a verify:external script.');
+}
+await access(join(root, 'scripts/check-external-readiness.ts'));
 
 const detectorSummary = await readJson<{
   total: number;
@@ -70,15 +77,8 @@ if (planReplanSummary.planFixtures !== 10 || planReplanSummary.replanFixtures !=
   throw new Error(`Plan/replan snapshot summary drifted: ${JSON.stringify(planReplanSummary)}`);
 }
 
-await assertPackage('packages/dispatch/package.json', 'dispatch', {
-  dispatch: './dist/node/bin.js',
-});
 await assertPackage('packages/dispatch-detector/package.json', 'dispatch-detector', {
   'dispatch-detector': './dist/node/bin.js',
-});
-await assertPackage('packages/dispatch-ai/package.json', 'dispatch-ai', {
-  dispatch: './dist/node/dispatch.js',
-  'dispatch-detector': './dist/node/dispatch-detector.js',
 });
 
 const ciWorkflow = await readText('.github/workflows/ci.yml');
@@ -106,6 +106,7 @@ for (const required of [
   'bun-windows-x64',
   'bun run verify:release',
   'npm publish --access public --provenance',
+  'working-directory: packages/dispatch-detector',
   'homebrew-dispatch-ai',
 ]) {
   if (!releaseWorkflow.includes(required)) {
@@ -173,13 +174,6 @@ if (detectorExit !== 2) {
   throw new Error(`Detector smoke expected exit 2, got ${detectorExit}`);
 }
 
-const npmCliVersion = await $`npm exec --package ./packages/dispatch -- dispatch --version`
-  .cwd(root)
-  .text();
-if (npmCliVersion.trim() !== cliVersion.trim()) {
-  throw new Error(`npm exec dispatch version mismatch: ${npmCliVersion}`);
-}
-
 const npmDetectorVersion =
   await $`npm exec --package ./packages/dispatch-detector -- dispatch-detector --version`
     .cwd(root)
@@ -188,29 +182,11 @@ if (npmDetectorVersion.trim() !== detectorVersion.trim()) {
   throw new Error(`npm exec dispatch-detector version mismatch: ${npmDetectorVersion}`);
 }
 
-const npmInstallCliVersion =
-  await $`npm exec --package ./packages/dispatch-ai -- dispatch --version`.cwd(root).text();
-if (npmInstallCliVersion.trim() !== cliVersion.trim()) {
-  throw new Error(`dispatch-ai installer dispatch version mismatch: ${npmInstallCliVersion}`);
-}
-
-const npmInstallDetectorVersion =
-  await $`npm exec --package ./packages/dispatch-ai -- dispatch-detector --version`
-    .cwd(root)
-    .text();
-if (npmInstallDetectorVersion.trim() !== detectorVersion.trim()) {
-  throw new Error(
-    `dispatch-ai installer dispatch-detector version mismatch: ${npmInstallDetectorVersion}`,
-  );
-}
-
 for (const pkg of [
   'packages/shared',
   'packages/detector',
   'packages/cli',
-  'packages/dispatch',
   'packages/dispatch-detector',
-  'packages/dispatch-ai',
 ]) {
   await $`npm pack --dry-run --json`.cwd(join(root, pkg)).quiet();
 }
