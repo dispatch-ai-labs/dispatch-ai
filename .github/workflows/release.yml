@@ -78,9 +78,13 @@ jobs:
           node-version: 22
 
       - name: Upgrade npm to a version that supports OIDC trusted publishing
-        # Trusted publishing + --provenance requires npm >= 11.5.1. Node 22 ships with 10.x.
+        # Trusted publishing + --provenance requires npm >= 11.5.1. Node 22 LTS ships with 10.x.
+        # We use corepack instead of `npm install -g npm@latest` because the self-upgrade
+        # corrupts its own node_modules mid-install on Node 22 runners (promise-retry was
+        # removed in npm 11; the still-running npm 10 then crashes mid-reify).
         run: |
-          npm install -g npm@latest
+          corepack enable
+          corepack prepare npm@11.5.1 --activate
           npm --version
 
       - run: bun install --frozen-lockfile
